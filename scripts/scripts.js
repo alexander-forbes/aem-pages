@@ -612,9 +612,15 @@ function loadFooter(footer) {
 function decorateExternalLinks(main) {
   main.querySelectorAll('a').forEach((a) => {
     const href = a.getAttribute('href');
-    if (!href.startsWith('/')
-      && !href.startsWith('#')) {
+    if ((!href.startsWith('/') && !href.startsWith('#'))
+      || href.endsWith('.pdf')
+      || href.endsWith('#_blank')) {
       a.setAttribute('target', '_blank');
+      if (href.endsWith('#_blank')) {
+        // remove link target hint from hash
+        const url = new URL(href, window.location.href);
+        a.setAttribute('href', url.pathname);
+      }
     }
   });
 }
@@ -622,7 +628,6 @@ function decorateExternalLinks(main) {
 /**
  * Link handling
  * - Finds and decorates modal links.
- * - Sets target for pdf links to _blank
  * @param {Element} main The container element
  */
 async function handleLinks(main) {
@@ -632,8 +637,6 @@ async function handleLinks(main) {
       // eslint-disable-next-line import/no-cycle
       const { handleModalLink } = await import('../blocks/modal/modal.js');
       handleModalLink(a);
-    } else if (href.includes('.') && href.split('.').pop().toUpperCase() === 'PDF') {
-      a.setAttribute('target', '_blank');
     }
   });
 }
